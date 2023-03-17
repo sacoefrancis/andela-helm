@@ -1,0 +1,432 @@
+{
+  "groups": [
+    {
+      "name": "node exporter",
+      "rules": [
+        {
+          "alert": "HostOutOfMemory",
+          "expr": "node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Host out of memory (instance {{ $labels.instance }})",
+            "description": "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "HighDiskSpaceUsage",
+          "expr": "((node_filesystem_size_bytes{mountpoint=\"/\"} - node_filesystem_free_bytes{mountpoint=\"/\"} ) / node_filesystem_size_bytes{mountpoint=\"/\"} * 100) > 87",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "disk usage is above 80% (current value is: {{ $value }})",
+            "summary": " high disk space"
+          }
+        },
+        {
+          "alert": "HostMemoryUnderMemoryPressure",
+          "expr": "rate(node_vmstat_pgmajfault[1m]) > 1000",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Host memory under memory pressure (instance {{ $labels.instance }})",
+            "description": "The node is under heavy memory pressure. High rate of major page faults\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "HostNetworkTransmitErrors",
+          "expr": "rate(node_network_transmit_errs_total[2m]) / rate(node_network_transmit_packets_total[2m]) > 0.01",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Host Network Transmit Errors (instance {{ $labels.instance }})",
+            "description": "Host {{ $labels.instance }} interface {{ $labels.device }} has encountered {{ printf \"%.0f\" $value }} transmit errors in the last two minutes.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "HostNetworkReceiveErrors",
+          "expr": "rate(node_network_receive_errs_total[2m]) / rate(node_network_receive_packets_total[2m]) > 0.01",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Host Network Receive Errors (instance {{ $labels.instance }})",
+            "description": "Host {{ $labels.instance }} interface {{ $labels.device }} has encountered {{ printf \"%.0f\" $value }} receive errors in the last two minutes.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "HostNetworkInterfaceSaturated",
+          "expr": "(rate(node_network_receive_bytes_total{device!~\"^tap.*\"}[1m]) + rate(node_network_transmit_bytes_total{device!~\"^tap.*\"}[1m])) / node_network_speed_bytes{device!~\"^tap.*\"} > 0.8 < 10000",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Host Network Interface Saturated (instance {{ $labels.instance }})",
+            "description": "The network interface \"{{ $labels.device }}\" on \"{{ $labels.instance }}\" is getting overloaded.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "High_system_load",
+          "expr": "node_load1 > 30",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Docker host is under high load, the avg load 1m is at {{ $value}}. Reported by instance {{ $labels.instance }} of job {{ $labels.job }}.",
+            "summary": "Server under high load"
+          }
+        },
+        {
+          "alert": "HostOutOfDiskSpace",
+          "expr": "(node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 10 and ON (instance, device, mountpoint) node_filesystem_readonly == 0",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Host out of disk space (instance {{ $labels.instance }})",
+            "description": "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "High_memory_load",
+          "expr": "((node_memory_MemTotal_bytes) - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes) ) / (node_memory_MemTotal_bytes) * 100 > 80",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": " host memory usage is {{ humanize $value}}%. Reported by instance {{ $labels.instance }} of job {{ $labels.job }}.",
+            "summary": "Server memory is almost full"
+          }
+        },
+        {
+          "alert": "High_cpu_load",
+          "expr": "(1 - avg(irate(node_cpu_seconds_total{mode=\"idle\"}[10m])) by (instance)) * 100 > 95",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": " host cpu  usage is {{ humanize $value}}%. Reported by instance {{ $labels.instance }} of job {{ $labels.job }}.",
+            "summary": "cpu under high load"
+          }
+        },
+        {
+          "alert": "container_memory_usage",
+          "expr": "sum(avg_over_time(jvm_memory_used_bytes{area=\"heap\"}[1m]))by(application,instance)*100/sum(avg_over_time(jvm_memory_max_bytes{area=\"heap\"}[1m]))by(application,instance) > 80",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Container memory usage (instance {{ $labels.instance }})",
+            "summary": "container memory under high load"
+          }
+        },
+        {
+          "alert": "Host_Network_Receive_Errors",
+          "expr": "increase(node_network_receive_errs_total[5m]) > 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "{{ $labels.instance }} interface {{ $labels.device }} has encountered {{ printf  $value }} receive errors in the last five minutes.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}",
+            "summary": "Host Network Receive Errors (instance {{ $labels.instance }})"
+          }
+        },
+        {
+          "alert": "Host_Network_Transmit_Errors",
+          "expr": "increase(node_network_transmit_errs_total[5m]) > 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "{{ $labels.instance }} interface {{ $labels.device }} has encountered {{ printf  $value }} transmit errors in the last five minutes.\n VALUE = {{ $value }}\n  LABELS: {{ $labels }}",
+            "summary": "Host Network Transmit Errors (instance {{ $labels.instance }})"
+          }
+        },
+        {
+          "alert": "Host_Unusual_Network_ThroughputIn",
+          "expr": "sum by (instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Host network interfaces are probably receiving too much data (> 100 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}",
+            "summary": "Host unusual network throughput in (instance {{ $labels.instance }})"
+          }
+        },
+        {
+          "alert": "Host_Unusual_Network_ThroughputOut",
+          "expr": "sum by (instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Host network interfaces are probably sending too much data (> 100 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}",
+            "summary": "Host unusual network throughput out (instance {{ $labels.instance }})"
+          }
+        }
+      ]
+    },
+    {
+      "name": "kubernetes",
+      "rules": [
+        {
+          "alert": "KubernetesApiServerLatency",
+          "expr": "histogram_quantile(0.95, rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes-apiservers\"}[5m])) > 60",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Kubernetes API server latency (instance {{ $labels.instance }})",
+            "description": "Kubernetes API server has a 95th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesNodeReady",
+          "expr": "kube_node_status_condition{condition=\"Ready\",status=\"true\"} == 0",
+          "for": "10m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "Kubernetes Node ready (instance {{ $labels.instance }})",
+            "description": "Node {{ $labels.node }} has been unready for a long time\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesMemoryPressure",
+          "expr": "kube_node_status_condition{condition=\"MemoryPressure\",status=\"true\"} == 1",
+          "for": "3m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "Kubernetes memory pressure (instance {{ $labels.instance }})",
+            "description": "{{ $labels.node }} has MemoryPressure condition\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesDiskPressure",
+          "expr": "kube_node_status_condition{condition=\"DiskPressure\",status=\"true\"} == 1",
+          "for": "3m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "Kubernetes disk pressure (instance {{ $labels.instance }})",
+            "description": "{{ $labels.node }} has DiskPressure condition\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesOutOfCapacity",
+          "expr": "sum by (node) ((kube_pod_status_phase{phase=\"Running\"} == 1) + on(uid) group_left(node) (0 * kube_pod_info{pod_template_hash=\"\"})) / sum by (node) (kube_node_status_allocatable{resource=\"pods\"}) * 100 > 90",
+          "for": "3m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Kubernetes out of capacity (instance {{ $labels.instance }})",
+            "description": "{{ $labels.node }} is out of capacity\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesPersistentvolumeclaimPending",
+          "expr": "kube_persistentvolumeclaim_status_phase{phase=\"Pending\"} == 1",
+          "for": "3m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})",
+            "description": "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesVolumeOutOfDiskSpace",
+          "expr": "kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10",
+          "for": "3m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Kubernetes Volume out of disk space (instance {{ $labels.instance }})",
+            "description": "Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesVolumeFullInFourDays",
+          "expr": "predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0",
+          "for": "3m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "Kubernetes Volume full in four days (instance {{ $labels.instance }})",
+            "description": "{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is expected to fill up within four days. Currently {{ $value | humanize }}% is available.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "KubernetesStatefulsetDown",
+          "expr": "(kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1",
+          "for": "3m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "Kubernetes StatefulSet down (instance {{ $labels.instance }})",
+            "description": "A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "keycloak",
+      "rules": [
+        {
+          "alert": "KeycloakLoginFailedThresholdExceeded",
+          "expr": "rate(keycloak_failed_login_attempts{realm=\"master\"}[3m]) * 300 > 5",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "More than 5 failed login attempts for realm {{ $labels.realm }}, provider {{ $labels.provider }}, job {{ $labels.job }} over the last 5 minutes. (Rate of {{ printf  $value }})",
+            "summary": "failed login attempts for realm (instance {{ $labels.instance }})"
+          }
+        },
+        {
+          "alert": "KeycloakMetricsDown",
+          "expr": "up{ job=\"keycloak-metrics\"} == 1",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Keycloak Metrics are not coming {{ $labels.instance }}, provider {{ $labels.job }} over the last 5 minutes. (Rate of {{ printf  $value }})",
+            "summary": "Keycloak Metrics are not coming (instance {{ $labels.instance }})"
+          }
+        },
+        {
+          "alert": "KeycloakJavaNonHeapThresholdExceeded",
+          "expr": "(100 * jvm_memory_bytes_used{area=\"nonheap\",instance=\"keycloak-nonprod.cassbana.com:80\"} / jvm_memory_bytes_max{area=\"nonheap\",instance=\"keycloak-nonprod.cassbana.com:80\"}) > 90",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "{{ printf  $value }}% nonheap usage of {{ $labels.area }} in pod {{ $labels.pod }}, instance {{ $labels.instance }}.",
+            "summary": "Keycloak Java NonHeap Threshold Exceeded (instance {{ $labels.instance }})"
+          }
+        },
+        {
+          "alert": "KeycloakJavaDeadlockedThreads",
+          "expr": "(jvm_threads_deadlocked{job=\"keycloak-metrics-master\"}) > 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Number of threads in deadlock state of {{ $labels.job }} , instance {{ $labels.instance }}",
+            "summary": "Keycloak Java Deadlocked Threads (instance {{ $labels.instance }})"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MongoDB",
+      "rules": [
+        {
+          "alert": "MongodbDown",
+          "expr": "mongodb_up == 0",
+          "for": "1m",
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "summary": "MongoDB Down (instance {{ $labels.instance }})",
+            "description": "MongoDB instance is down  VALUE = {{ $value }}  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "MongodbTooManyConnections",
+          "expr": "avg by(instance) (rate(mongodb_connections{state=\"current\"}[5m])) / avg by(instance) (sum (mongodb_connections) by (instance)) * 100 > 80",
+          "for": "2m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "MongoDB too many connections (instance {{ $labels.instance }})",
+            "description": "Too many connections (> 80%)  VALUE = {{ $value }}  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "Mongodb_replica_member_unhealthy",
+          "expr": "mongodb_rs_members_health == 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "MongoDB replica member is not healthy (instance {{ $labels.instance }})",
+            "description": "MongoDB replica member is not healthy VALUE = {{ $value }}  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "Mongodb_storage_engine_unhealthy",
+          "expr": "mongodb_mongod_storage_engine{engine=\"wiredTiger\"} == 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Mongodb storage engine unhealthy (instance {{ $labels.instance }})",
+            "description": "Mongodb storage engine unhealthy VALUE = {{ $value }}  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "Mongodb_sharding_balancer_unhealthy",
+          "expr": "mongodb_mongos_sharding_balancer_enabled == 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Mongodb sharding balancer unhealthy (instance {{ $labels.instance }})",
+            "description": "Mongodb sharding balancer unhealthy VALUE = {{ $value }}  LABELS = {{ $labels }}"
+          }
+        },
+        {
+          "alert": "Mongodb_shards_not_available",
+          "expr": "mongodb_mongos_sharding_shards_total{job=\"mongodb\"} == 0",
+          "for": "5m",
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "summary": "Mongodb shards unavailable (instance {{ $labels.instance }})",
+            "description": "Mongodb shards unavailable VALUE = {{ $value }}  LABELS = {{ $labels }}"
+          }
+        }
+      ]
+    }
+  ]
+}
