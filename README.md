@@ -1,24 +1,29 @@
-# andela-helm
+# andela-helm 
 
-# what is helm?
+# Prerequisites
 
-  Helm is a package manager for Kubernetes that simplifies the deployment and management of applications and services. It allows you to define, install, and upgrade complex Kubernetes applications with ease, by providing a templating system for YAML files that describe the various Kubernetes resources required to run your application.
+* Helm installed in kubernetes cluster (version v3.8.2 or later)
 
-  With Helm, you can define a "chart", which is a collection of files that describe the Kubernetes resources that make up an application or service, along with any necessary configuration values. Helm can then use these charts to deploy the application or service to a Kubernetes cluster.
+# Steps
 
-  Helm also supports versioning, dependency management, and rollback of deployments. It can also be extended with plugins to add additional functionality. Overall, Helm is a powerful tool for managing complex Kubernetes deployments and simplifying the management of cloud-native applications.
+Step 1: **helm create andela**
 
-------------------------------------------------------------------------------------------------------------------------------------------------------
-# How we using helm?
+this command will generates a new Helm chart template with a basic directory structure and set of default files.
 
-  Here we using helm charts to install our applications in kubernetes cluster.Our helm chart should contains needed resources to be installed under our kubernetes cluster.In our repository we followed helm templating approach,helm-templates folder consists template YAML files for like Deployment,Service,ingress etc., And andela-apps consists of applications values.yaml file.In our case the andela-apps folder contains another folder called andela-springboot,so we are having one values.yaml file there inside andela-springboot folder to run our install our application under kubernetes cluster.
+Step 2: Inside the helm-templates folder it should contains all the needed kubernetes resources as a **YAML** file to install our application under cluster.In our case it contains configmap,service,ingress,deployment.yaml files.
 
-------------------------------------------------------------------------------------------------------------------------------------------------------
-# Steps to install the application using helm
+Stpe 3:  **kubectl create namespace andela**
 
-* We Need to create a namespace in our kubernetes cluster to install our application.Using the command like (kubectl create namespace andela)
-* Then we have to install the application using helm install command from the helm-templates folder like this (helm upgrade --install andela-springboot-app -n andela . -f ../andela-apps/andela-springboot/values.yaml)
-* The above command will help us to install or upgrade our helm chart.
-* Once the helm chart installed successfully we can check our created kubernetes resources using our templates by this command (kubectl get all -n andela)
-----------------------------------------------------------------------------------------------------------------------------------------------------------
+kubectl create namespace command will help us to create a **namespace** under kubernetes cluster.
 
+Step 4: **helm upgrade --install andela-springboot-app -n andela . -f ../andela-apps/andela-springboot/values.yaml**
+
+This command is to install a new helm chart under the newly created namespace.**andela-springboot-app** is the user defined **chart name** to be installed.
+we have to run this command from the template folder where the chart.yaml present.
+
+Step 5: **kubectl get all -n andela**
+
+This command will give all the details about the kubernetes resources installed by helm install command under the specified namespace.
+
+
+ 
