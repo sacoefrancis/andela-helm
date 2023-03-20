@@ -10,7 +10,7 @@ Step 1: **helm create andela**
 
 this command will generates a new Helm chart template with a basic directory structure and set of default files.
 
-Step 2: Inside the helm-templates folder it should contains all the needed kubernetes resources as a **YAML** file to install our application under cluster.In our case it contains configmap,service,ingress,deployment.yaml files.
+Step 2: Inside the helm-templates folder it should contains all the needed kubernetes resources as a **YAML** file to install our application under cluster.In our case it contains configmap,hpa,service,ingress,deployment.yaml files.
 
 Stpe 3:  **kubectl create namespace andela**
 
